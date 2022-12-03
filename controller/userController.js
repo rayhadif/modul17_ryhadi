@@ -92,12 +92,19 @@ const logout = async(req, res, next) => {
 
 const verify = async(req, res, next) => {
     try {
-        // 13. membuat verify\
-        const data = req.data
-        return res.status(200).json(data)
+        // 13. membuat verify
+        // const email= req.verified.email;
+        const {email} = req.body
+        const user = await db.query(`SELECT * FROM unhan_modul_17 WHERE email=$1;`, [email])
+        return res.status(200).json({
+            id: user.rows[0].id,
+            username: user.rows[0].username,
+            email: user.rows[0].email,
+            password : user.rows[0].password
+        })
     } catch (err) {
         console.log(err.message);
-        return res.status(500).send(err);
+        return res.status(500).send(err)    
     }
 }
 
