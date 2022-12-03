@@ -6,7 +6,7 @@ const{
     HOST,
     DATABASE,
     PASSWORD,
-    PORT
+    PORT_DB
 } = process.env
 
 const db = new Client({
@@ -14,7 +14,7 @@ const db = new Client({
     host: HOST,
     database: DATABASE,
     password: PASSWORD,
-    port: PORT,
+    port: PORT_DB,
 });
 
 module.exports = db;
