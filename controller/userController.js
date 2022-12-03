@@ -24,32 +24,58 @@ const register = async(req, res, next) => {
 }
 
 const login = async(req, res, next) => {
-    const {email, password} = req.body;
-    const foundUser = await db.query(`SELECT * FROM unhan_modul_17 WHERE email=$1 LIMIT 1`, [email]);
-    if (foundUser.rows.length === 0) {
-        return res.send('Invalid Username');
-    }
+    
     // 9. komparasi antara password yang diinput oleh pengguna dan password yang ada didatabase
+    const { email, password } = req.body;
     try {
-        const hashedPassword = await bcrypt.compare(password, foundUser.rows[0].password);
-        if (hashedPassword) {
-            // 10. Generate token menggunakan jwt sign
-            let data = {
-                id: foundUser.rows[0].id,
-                username: foundUser.rows[0].username,
-                email: email,
-                password: password,
-            }
-            const token = jwt.sign(data, process.env.SECRET);
-            foundUser.rows[0].token=token;
-            //11. kembalikan nilai id, email, dan username
-            return res.cookie("jwt",token, {httpOnly: true, sameSite: "strict",}).send(foundUser.rows[0]);
-        } else {
-            return res.send('Access Denied!');
+    const data = await db.query(`SELECT * FROM unhan_modul_17 WHERE email= $1; `,[email]) //Verifying if the user exists in the database
+    const user = data.rows;
+    if (user.length === 0) {
+    res.status(400).json({
+    error: "User tidak ada, Silahkan Daftar dulu!",
+    });
+    }
+    else {
+        bcrypt.compare(password, user[0].password, (err, result) => { //Comparing the hashed password
+        if (err) {
+        res.status(500).json({
+        error: "Server error",
+        });
+        } else if (result === true) { //Checking if credentials match
+        // 10. Generate token menggunakan jwt sign
+        const token = jwt.sign(
+        {
+        id: user[0].id,
+        username: user[0].username,
+        email: user[0].email,
+        password:user[0].password,
+        },
+        process.env.SECRET
+        );
+        res.cookie("JWT",token, {httpOnly: true, sameSite:"strict",})
+        res.status(200).json({
+        message: "User berhasil masuk!",
+        //11. kembalikan nilai id, email, dan username
+        id: user[0].id,
+        user: user[0].username,
+        email: user[0].email
+        });
         }
-    } catch (error) {
-        return res.send(error);
-    }    
+        else {
+            //Declaring the errors
+            if (result != true)
+            res.status(400).json({
+            error: "Masukkan password dengan benar!",
+            });
+            }
+            })
+            }
+            } catch (err) {
+            console.log(err);
+            res.status(500).json({
+            error: "Database error occurred while signing in!", //Database connection error
+            });
+            };
 }
 
 const logout = async(req, res, next) => {
