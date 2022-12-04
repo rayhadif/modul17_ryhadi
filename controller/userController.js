@@ -58,7 +58,8 @@ const login = async(req, res, next) => {
         //11. kembalikan nilai id, email, dan username
         id: user[0].id,
         user: user[0].username,
-        email: user[0].email
+        email: user[0].email,
+        token:token
         });
         }
         else {
