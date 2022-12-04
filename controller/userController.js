@@ -94,7 +94,7 @@ const verify = async(req, res, next) => {
     try {
         // 13. membuat verify
         // const email= req.verified.email;
-        const {email} = req.body
+        const {email} = req.data
         const user = await db.query(`SELECT * FROM unhan_modul_17 WHERE email=$1;`, [email])
         return res.status(200).json({
             id: user.rows[0].id,
